@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>新年烟花</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+        }
+        #text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="text">新年快乐，我们永远在一起</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const text = document.getElementById('text');
+        
+        // 设置画布大小
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 烟花粒子类
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 8,
+                    y: (Math.random() - 0.5) * 8
+                };
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.015;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.velocity.y += 0.05;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= this.decay;
+            }
+        }
+
+        // 烟花数组
+        let particles = [];
+        let fireworksCount = 0;
+        const maxFireworks = 5;
+
+        // 创建烟花
+        function createFirework() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height / 2;
+            const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            for(let i = 0; i < 100; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+            fireworksCount++;
+        }
+
+        // 动画循环
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles = particles.filter(particle => {
+                particle.update();
+                particle.draw();
+                return particle.alpha > 0;
+            });
+
+            if (fireworksCount < maxFireworks) {
+                if (Math.random() < 0.05) {
+                    createFirework();
+                }
+            } else if (particles.length === 0) {
+                // 显示文字
+                text.style.opacity = '1';
+                return;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // 开始动画
+        animate();
+
+        // 窗口大小改变时重置画布大小
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
